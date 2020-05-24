@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>P1 SmartMeter</title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="pure-min.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            font-family: Arial;
+        }
+
+        .pure-menu {
+            background-color: #2D3E50;
+        }
+
+        .pure-menu-heading {
+            font-weight: bold;
+        }
+
+        .pure-menu-selected {
+            color: #FFF !important;
+        }
+
+        .pure-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="layout">
+        <div class="header">
+            <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+                <a class="pure-menu-heading" href="#">P1 SmartMeter</a>
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item"><a href="/" class="pure-menu-link">Home</a></li>
+                    <li class="pure-menu-item"><a href="/config" class="pure-menu-link">Config</a></li>
+                    <li class="pure-menu-item pure-menu-selected"><a href="/about" class="pure-menu-link">About</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="main">
+            <div class="header">
+                <h1>About</h1>
+                <h2>P1 SmartMeter</h2>
+            </div>
+
+            <div class="content">
+                <h2 class="content-subhead">IP</h2>
+                <p id="ip">Loading...</p>
+                <h2 class="content-subhead">MAC</h2>
+                <p id="mac">Loading...</p>
+                <h2 class="content-subhead">Version</h2>
+                <p id="version">Loading...</p>
+                <h2 class="content-subhead">Uptime</h2>
+                <p id="uptime">Loading...</p>
+                <h2 class="content-subhead">Memory Information</h2>
+                <p id="meminfo">Loading...</p>
+                <h2 class="content-subhead">Created by</h2>
+                <p>Sven Arends</p>
+                <a href="http://svenar.nl/">svenar.nl</a>
+                <h2 class="content-subhead">Licenses</h2>
+                <a href="https://raw.githubusercontent.com/alanswx/ESPAsyncWiFiManager/master/LICENSE">Wifimanager</a>
+                <br />
+                <a href="https://raw.githubusercontent.com/knolleary/pubsubclient/master/LICENSE.txt">PubSubClient</a>
+                <br />
+                <a href="https://raw.githubusercontent.com/bblanchon/ArduinoJson/6.x/LICENSE.md">ArduinoJSON</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="jquery.min.js"></script>
+    <script>
+        if (!window.jQuery) {
+            var newJQueryLoader = document.createElement('script');
+            document.getElementById("main").appendChild(newJQueryLoader);
+            newJQueryLoader.src = "https://code.jquery.com/jquery-3.4.1.min.js";
+            newJQueryLoader.integrity = "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=";
+            newJQueryLoader.crossorigin = "anonymous";
+        }
+    </script>
+    <script src="ui.js"></script>
+    <script>
+        poll();
+
+        setInterval(function () {
+            poll();
+        }, 10000);
+
+        function poll() {
+            $.ajax({
+                url: "/ip"
+            }).done(function (data) {
+                document.getElementById("ip").innerHTML = data;
+            });
+
+            $.ajax({
+                url: "/mac"
+            }).done(function (data) {
+                document.getElementById("mac").innerHTML = data;
+            });
+
+            $.ajax({
+                url: "/uptime"
+            }).done(function (data) {
+                document.getElementById("uptime").innerHTML = data;
+            });
+
+            $.ajax({
+                url: "/version"
+            }).done(function (data) {
+                document.getElementById("version").innerHTML = data;
+            });
+
+            $.ajax({
+                url: "/meminfo"
+            }).done(function (data) {
+                document.getElementById("meminfo").innerHTML = data;
+            });
+        }		</script>
+</body>
+
+</html>

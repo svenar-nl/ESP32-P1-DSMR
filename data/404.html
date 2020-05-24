@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>P1 SmartMeter</title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="pure-min.css" />
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+            font-family: Arial;
+        }
+
+        .pure-menu {
+            background-color: #2D3E50;
+        }
+
+        .pure-menu-heading {
+            font-weight: bold;
+        }
+
+        .pure-menu-selected {
+            color: #FFF !important;
+        }
+
+        .pure-table {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+
+		.pure-button {
+			width: 100%;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 25px;
+			margin-top: 10px;
+		}
+
+		.pure-button-primary {
+			background-color: #64beed;
+		}
+    </style>
+</head>
+
+<body>
+    <div id="layout">
+        <div class="header">
+            <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+                <a class="pure-menu-heading" href="#">P1 SmartMeter</a>
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item"><a href="/" class="pure-menu-link">Home</a></li>
+                    <li class="pure-menu-item"><a href="/config" class="pure-menu-link">Config</a></li>
+                    <li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="main">
+            <div class="header">
+                <h1>404</h1>
+                <h2>Page not found!</h2>
+            </div>
+
+            <div class="content">
+                <button class="pure-button pure-button-primary" onclick="window.history.back();">Go back</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="jquery.min.js"></script>
+    <script>
+        if (!window.jQuery) {
+            var newJQueryLoader = document.createElement('script');
+            document.getElementById("main").appendChild(newJQueryLoader);
+            newJQueryLoader.src = "https://code.jquery.com/jquery-3.4.1.min.js";
+            newJQueryLoader.integrity = "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=";
+            newJQueryLoader.crossorigin = "anonymous";
+        }
+    </script>
+    <script src="ui.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>P1 SmartMeter</title>
+
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="pure-min.css" />
+	<link rel="stylesheet" href="style.css" />
+
+	<style>
+		* {
+			margin: 0px;
+			padding: 0px;
+			font-family: Arial;
+		}
+
+		.pure-menu {
+			background-color: #2D3E50;
+		}
+
+		.pure-menu-heading {
+			font-weight: bold;
+		}
+
+		.pure-menu-selected {
+			color: #FFF !important;
+		}
+
+		.pure-table {
+			width: 100%;
+			margin-top: 10px;
+		}
+
+		.center-text {
+			text-align: center;
+		}
+
+		textarea {
+			width: 100%;
+			height: 500px;
+			border: 2px solid #2d3e50;
+			border-radius: 5px;
+			margin-top: 10px;
+		}
+
+		.pure-button-fullwidth {
+			width: 100%;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 25px;
+		}
+
+		.pure-button-primary {
+			background-color: #64beed;
+		}
+
+		.button-error {
+			background-color: #ca3c3c;
+		}
+
+		.button-success {
+			background-color: #3cca3c;
+		}
+
+		#warning_no_json_validation {
+			text-align: center;
+			color: #8d1818;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="layout">
+		<div class="header">
+			<div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+				<a class="pure-menu-heading" href="#">P1 SmartMeter</a>
+				<ul class="pure-menu-list">
+					<li class="pure-menu-item"><a href="/" class="pure-menu-link">Home</a></li>
+					<li class="pure-menu-item pure-menu-selected"><a href="/config" class="pure-menu-link">Config</a>
+					</li>
+					<li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+				</ul>
+			</div>
+		</div>
+		<div id="main">
+			<div class="header">
+				<h1>Config</h1>
+				<h2>JSON</h2>
+			</div>
+
+			<div class="content">
+				<!-- <p id="warning_no_json_validation">WARNING: JSON will not validated before saving.</p> -->
+				<textarea id="textarea_config_json"></textarea>
+				<button class="pure-button pure-button-fullwidth pure-button-primary" onclick="save();">Save
+					config.json</button>
+
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+				<br />
+
+				<!-- <h2 class="content-subhead">Reset</h2> -->
+				<div class="header">
+					<h1>Reset</h1>
+					<h2>WiFi and / or config</h2>
+				</div>
+				<h2 class="text-error text-bold">!!!WARNING!!!</h2>
+				<h3 class="text-error text-bold">No confirmation is asked. Pressing these buttons will restart the
+					controller and setup is required. Be careful!</h3>
+				<button id="btnwipewifi" class="button-error pure-button" onclick="wipewifi();">Wipe WiFi
+					Settings</button>
+				<button id="btnfactoryreset" class="button-error pure-button" onclick="factoryreset();">Factory
+					Reset</button>
+				<p><strong>'Wipe WiFi Settings'</strong> will clear the configured WiFi networks but the config data
+					will retain.</p>
+				<p><strong>'Factory Reset'</strong> will clear the configured WiFi networks and the config data.</p>
+			</div>
+		</div>
+	</div>
+
+	<script src="jquery.min.js"></script>
+	<script>
+		if (!window.jQuery) {
+			var newJQueryLoader = document.createElement('script');
+			document.getElementById("main").appendChild(newJQueryLoader);
+			newJQueryLoader.src = "https://code.jquery.com/jquery-3.4.1.min.js";
+			newJQueryLoader.integrity = "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=";
+			newJQueryLoader.crossorigin = "anonymous";
+		}
+	</script>
+	<script src="ui.js"></script>
+	<script>
+		var id_base = "#";
+		var id_textarea_config = "textarea_config_json";
+
+		$(document).ready(function () {
+			$.ajax({
+				type: "json",
+				url: "config.json"
+			}).done(function (data) {
+				$(id_base + id_textarea_config).val(JSON.stringify(data, null, 2));
+			});
+			// $(id_base + id_textarea_config).val(config_json);
+		});
+
+		function save() {
+			var config_data = null;
+			try {
+				config_data = JSON.stringify(JSON.parse($("#textarea_config_json").val()))
+			} catch (error) {
+				alert("Error in JSON syntax config will not be saved!\n\n" + error);
+				return;
+			}
+			if (config_data != null && config_data.length > 0) {
+				$.ajax({
+					url: "/saveconfig",
+					method: "POST",
+					data: { config: config_data }
+				}).done(function (data) {
+					if (data.toLowerCase() == "ok")
+						alert("config.json Saved!\nDevice will now restart.");
+					else
+						alert("Error in JSON syntax config will not be saved!\n\nP1 SmartMeter board reported an error.");
+				}).fail(function (ret) {
+					alert("Error in JSON syntax config will not be saved!\n\nReported error: " + ret.split(":")[1]);
+				});
+			} else {
+				alert("Error in JSON syntax config will not be saved!\n\nconfig cannot be empty!");
+			}
+		}
+
+		function wipewifi() {
+			$.ajax({
+				url: "/wipewifisettings"
+			}).done(function (data) {
+				$("#btnwipewifi").removeClass("button-error").addClass("button-success");
+			});
+		}
+
+		function factoryreset() {
+			$.ajax({
+				url: "/factoryreset"
+			}).done(function (data) {
+				$("#btnfactoryreset").removeClass("button-error").addClass("button-success");
+			});
+		}
+
+		// var config_json = "{\n	\"debug\": false,\n	\"mqtt\": {\n		\"username\": \"p1\",\n		\"password\": \"password\",\n		\"host\": \"127.0.0.1\",\n		\"topic_base\": \"house/0/hallway/smartmeter\"\n	},\n	\"serial_baudrate\": 115200,\n	\"obis\": {\n		\"0-1:24.1.0\": {\n			\"description\": \"Number of devices on the M-Bus\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"0-1:96.1.0\": {\n			\"description\": \"Gasmeter identifier\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"0-1:24.2.1\": {\n			\"description\": \"Gasmeter data\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"gasmeter\",\n			\"value_field\": 2\n		},\n		\"1-3:0.2.8\": {\n			\"description\": \"Version information for P1 output\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"0-0:1.0.0\": {\n			\"description\": \"Date-timestamp of the P1 message\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"0-0:96.1.1\": {\n			\"description\": \"Equipment identifier\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"1-0:1.8.1\": {\n			\"description\": \"Meter Reading electricity delivered to client (Tariff 1) in 0,001 kWh\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"t1_used_kWh\"\n		},\n		\"1-0:1.8.2\": {\n			\"description\": \"Meter Reading electricity delivered to client (Tariff 2) in 0,001 kWh\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"t2_used_kWh\"\n		},\n		\"1-0:2.8.1\": {\n			\"description\": \"Meter Reading electricity delivered by client (Tariff 1) in 0,001 kWh\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"t1_returned\"\n		},\n		\"1-0:2.8.2\": {\n			\"description\": \"Meter Reading electricity delivered by client (Tariff 2) in 0,001 kWh\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"t2_returned\"\n		},\n		\"0-0:96.14.0\": {\n			\"description\": \"Tariff indicator electricity\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"1-0:1.7.0\": {\n			\"description\": \"Actual electricity power delivered (+P) in 1 Watt resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"current_power_used_watt\"\n		},\n		\"1-0:2.7.0\": {\n			\"description\": \"Actual electricity power received (-P) in 1 Watt resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"current_power_returned_watt\"\n		},\n		\"0-0:96.7.21\": {\n			\"description\": \"Number of power failures in any phase\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"0-0:96.7.9\": {\n			\"description\": \"Number of long power failures in any phase\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"1-0:99.97.0\": {\n			\"description\": \"Power Failure Event Log (long power failures)\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"1-0:32.32.0\": {\n			\"description\": \"Number of voltage sags in phase L1\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l1_voltage_sags\"\n		},\n		\"1-0:52.32.0\": {\n			\"description\": \"Number of voltage sags in phase L2\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l2_voltage_sags\"\n		},\n		\"1-0:72.32.0\": {\n			\"description\": \"Number of voltage sags in phase L3\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l3_voltage_sags\"\n		},\n		\"1-0:32.36.0\": {\n			\"description\": \"Number of voltage swells in phase L1\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l1_voltage_swells\"\n		},\n		\"1-0:52.36.0\": {\n			\"description\": \"Number of voltage swells in phase L2\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l2_voltage_swells\"\n		},\n		\"1-0:72.36.0\": {\n			\"description\": \"Number of voltage swells in phase L3\",\n			\"publish\": true,\n			\"count\": 60,\n			\"mqtt_topic\": \"l3_voltage_swells\"\n		},\n		\"0-0:96.13.0\": {\n			\"description\": \"Text message max 1024 characters.\",\n			\"publish\": false,\n			\"mqtt_topic\": \"notset\"\n		},\n		\"1-0:32.7.0\": {\n			\"description\": \"Instantaneous voltage L1 in V resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l1_voltage\"\n		},\n		\"1-0:52.7.0\": {\n			\"description\": \"Instantaneous voltage L2 in V resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l2_voltage\"\n		},\n		\"1-0:72.7.0\": {\n			\"description\": \"Instantaneous voltage L3 in V resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l3_voltage\"\n		},\n		\"1-0:31.7.0\": {\n			\"description\": \"Instantaneous current L1 in A resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l1_amperage\"\n		},\n		\"1-0:51.7.0\": {\n			\"description\": \"Instantaneous current L2 in A resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l2_amperage\"\n		},\n		\"1-0:71.7.0\": {\n			\"description\": \"Instantaneous current L3 in A resolution\",\n			\"publish\": true,\n			\"average\": 60,\n			\"mqtt_topic\": \"l3_amperage\"\n		},\n		\"1-0:21.7.0\": {\n			\"description\": \"Instantaneous active power L1 (+P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l1_current_power_used_watt\"\n		},\n		\"1-0:41.7.0\": {\n			\"description\": \"Instantaneous active power L2 (+P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l2_current_power_used_watt\"\n		},\n		\"1-0:61.7.0\": {\n			\"description\": \"Instantaneous active power L3 (+P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l3_current_power_used_watt\"\n		},\n		\"1-0:22.7.0\": {\n			\"description\": \"Instantaneous active power L1 (-P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l1_current_power_returned_watt\"\n		},\n		\"1-0:42.7.0\": {\n			\"description\": \"Instantaneous active power L2 (-P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l2_current_power_returned_watt\"\n		},\n		\"1-0:62.7.0\": {\n			\"description\": \"Instantaneous active power L3 (-P) in W resolution\",\n			\"publish\": true,\n			\"average\": 10,\n			\"mqtt_topic\": \"l3_current_power_returned_watt\"\n		}\n	}\n}\n";
+	</script>
+</body>
+
+</html>

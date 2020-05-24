@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>P1 SmartMeter</title>
+
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="pure-min.css" />
+	<link rel="stylesheet" href="style.css" />
+
+	<style>
+		* {
+			margin: 0px;
+			padding: 0px;
+			font-family: Arial;
+		}
+
+		.pure-menu {
+			background-color: #2D3E50;
+		}
+
+		.pure-menu-heading {
+			font-weight: bold;
+		}
+
+		.pure-menu-selected {
+			color: #FFF !important;
+		}
+
+		.pure-table {
+			width: 100%;
+			margin-top: 10px;
+		}
+
+		.center-text {
+			text-align: center;
+		}
+
+		.text-error {
+			font-weight: bold;
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="layout">
+		<div class="header">
+			<div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+				<a class="pure-menu-heading" href="#">P1 SmartMeter</a>
+				<ul class="pure-menu-list">
+					<li class="pure-menu-item pure-menu-selected"><a href="/" class="pure-menu-link">Home</a></li>
+					<li class="pure-menu-item"><a href="/config" class="pure-menu-link">Config</a></li>
+					<li class="pure-menu-item"><a href="/about" class="pure-menu-link">About</a></li>
+				</ul>
+			</div>
+		</div>
+		<div id="main">
+			<div class="header">
+				<h1>Data</h1>
+				<h2>Latest P1 data</h2>
+			</div>
+
+			<div class="content">
+				<p class="center-text">Updating every <span id="update-time">0</span>s</p>
+				<p class="center-text">Uptime <span id="uptime">0</span></p>
+				<p class="center-text text-error" id="communicationerror">Can't reach device!</p>
+				<table class="pure-table" id="data-table">
+					<thead>
+						<tr>
+							<th>Key</th>
+							<th>Value</th>
+							<th>Unit</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Loading...</td>
+							<td>Loading...</td>
+							<td>Loading...</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src="jquery.min.js"></script>
+	<script>
+		if (!window.jQuery) {
+			var newJQueryLoader = document.createElement('script');
+			document.getElementById("main").appendChild(newJQueryLoader);
+			newJQueryLoader.src = "https://code.jquery.com/jquery-3.4.1.min.js";
+			newJQueryLoader.integrity = "sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=";
+			newJQueryLoader.crossorigin = "anonymous";
+		}
+	</script>
+	<script src="ui.js"></script>
+	<script>
+		var update_time_delay = 10; // Seconds
+
+		var id_base = "#";
+		var id_update_time = "update-time";
+		var id_uptime = "uptime";
+
+		$(document).ready(function () {
+			$(id_base + id_update_time).text(update_time_delay);
+			$(id_base + id_uptime).text("00:00:00");
+
+			poll();
+
+			setInterval(function () {
+				poll();
+			}, update_time_delay * 1000);
+
+
+		});
+
+		function poll() {
+			$.ajax({
+				url: "/uptime"
+			}).done(function (data) {
+				$(id_base + id_uptime).text(data);
+				$("#communicationerror").hide();
+			}).fail(function (data) {
+				$("#communicationerror").show();
+			});
+
+			$.ajax({
+				url: "/data"
+			}).done(function (data) {
+				//console.log(data);
+				//var json_data = JSON.parse(data);
+				var json_data = data;
+				$("#data-table tbody").empty();
+
+				for (var i = 0; i < Object.keys(json_data).length; i++) {
+					var key = Object.keys(json_data)[i];
+					var value = Object.values(json_data)[i].value;
+					var unit = Object.values(json_data)[i].unit;
+					$("#data-table tbody").append("<tr><td>" + key + "</td><td>" + value + "</td><td>" + unit + "</td></tr>");
+				}
+				$("#communicationerror").hide();
+			}).fail(function (data) {
+				$("#communicationerror").show();
+			});
+		}
+	</script>
+</body>
+
+</html>
